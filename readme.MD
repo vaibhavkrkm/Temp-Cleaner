@@ -12,7 +12,7 @@ You can clean them using **Disk Cleanup** in Windows or even using the **Run Com
 - A **Clean All** button to clean everything in one go!
 
 ## How to Use Temp Cleaner:
-Just download the Latest Release from the Releases option (**Download .exe file**), or just [Click Here to Download](https://github.com/vaibhavkrkm/Temp-Cleaner/releases/tag/v1.5 "Click Here to Download")!
+Just download the Latest Release from the Releases option (**Download .exe file**), or just [Click Here to Download](https://github.com/vaibhavkrkm/Temp-Cleaner/releases/tag/v2.0 "Click Here to Download")!
 
 Then, you **must run it as Administrator** to use it properly!
 And, then you are good to go!
