@@ -1,5 +1,4 @@
 import os
-from matplotlib import use
 import winshell
 import winsound
 import PySimpleGUI as sg
