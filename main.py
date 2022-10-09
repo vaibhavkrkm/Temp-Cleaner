@@ -39,6 +39,9 @@ def get_size(content):
             except Exception as e:
                 folders_in_recycle_bin = True
                 print("Exception:", e)
+    elif (content == "prefetch"):
+        for item in os.listdir(prefetch_path):
+            size = get_folder_size(prefetch_path)
 
     if (folders_in_recycle_bin):
         return f"({get_readable_size(size)}+) "
@@ -119,13 +122,15 @@ user_settings = {
 }
 temp_path = r"C:\Windows\Temp"
 temp_percent_path = os.path.join(os.path.expanduser('~'), "AppData\Local\Temp")
+prefetch_path = r"C:\Windows\Prefetch"
 
 help_text = """
-Hello there! You can use me to clean any temporary files on your Windows machine!
+Hello there! You can use me to clean any unnecessary and temporary files on your Windows machine!
 
 1. temp is for cleaning Windows temporary files.
 2. %temp% is for cleaning user temporary files (AppData folder).
-3. You can also clean the recycle bin.
+3. prefetch is for cleaning files created by Windows for faster startup of the PC and apps.
+4. You can also clean the recycle bin.
 
 """
 about_text = """
@@ -136,9 +141,10 @@ Special Thanks to: Jan Pales (Discord ID: Derian#2429)
 """
 
 
-def create_window():
+def create_window(cleaning=False):
     global user_settings
     global apply_settings
+    global total_size
 
     if (apply_settings == True):
         apply_settings = False
@@ -153,7 +159,7 @@ def create_window():
     clean_all_recycle_bin = user_settings["settings"]["clean_all_recycle_bin"]
 
     if (show_sizes):
-        sizes_data = [get_size(content) for content in ("temp", "%temp%", "recyclebin")]
+        sizes_data = [get_size(content) for content in ("temp", "%temp%", "prefetch", "recyclebin")]
         
         size_bytes = 0
         # sizes_data -> ['5.0 MB', '56.78 GB', '34.91 KB']
@@ -173,10 +179,22 @@ def create_window():
             else:
                 size_bytes += size
         
+        try:
+            total_old_size = total_size
+        except:
+            pass
+        
         total_size = get_readable_size(size_bytes)
 
+        if (cleaning):
+            print(total_old_size.split()[0])
+            print(total_size.split()[0])
+
+            cleaned_size = float(total_old_size.split()[0]) - float(total_size.split()[0])
+            sg.popup_auto_close(f"Successfully cleared {round(cleaned_size, 1)} of unnecessary files! That's more free storage for you!", no_titlebar=True)
+
     else:
-        sizes_data = ["" for _ in range(3)]
+        sizes_data = ["" for _ in range(4)]
         total_size = ""
 
     sg.theme(theme)
@@ -199,6 +217,7 @@ def create_window():
         [sg.Text(f"{sizes_data[0]}temp ➩          "), sg.Button("Clean", key="CLEAN-TEMP")],
         [sg.Text(f"{sizes_data[1]}%temp% ➩    "), sg.Button("Clean", key="CLEAN-%TEMP%")],
         [sg.Text(f"{sizes_data[2]}recycle bin ➩  "), sg.Button("Clean", key="CLEAN-RECYCLE-BIN")],
+        [sg.Text(f"{sizes_data[3]}prefetch ➩       "), sg.Button("Clean", key="CLEAN-PREFETCH")],
         [sg.VPush()],
         [sg.HorizontalSeparator()],
         [sg.VPush()],
@@ -229,7 +248,7 @@ while True:
             exception = delete_dir_contents(temp_path)
             if (exception is not None):
                 winsound.PlaySound("*", winsound.SND_ASYNC)
-                sg.popup_error(f"Something went wrong!\nException: {exception}")
+                sg.popup_error(f"Something went wrong!\nException: {exception}", title="Oops!")
             
             window.close()
             window = create_window()
@@ -241,7 +260,7 @@ while True:
             exception = delete_dir_contents(temp_percent_path)
             if (exception is not None):
                 winsound.PlaySound("*", winsound.SND_ASYNC)
-                sg.popup_error(f"Something went wrong!\nException: {exception}")
+                sg.popup_error(f"Something went wrong!\nException: {exception}", title="Oops!")
             
             window.close()
             window = create_window()
@@ -254,8 +273,19 @@ while True:
                 winshell.recycle_bin().empty(confirm=False, show_progress=False, sound=False)
             except Exception as e:
                 winsound.PlaySound("*", winsound.SND_ASYNC)
-                sg.popup_error(f"An Error Occured! It may be your recycle bin is already empty!\nException: {e}")
+                sg.popup_error(f"An Error Occured! It may be your recycle bin is already empty!\nException: {e}", title="Oops!")
 
+            window.close()
+            window = create_window()
+    elif (event == "CLEAN-PREFETCH"):
+        user_input = sg.popup_ok_cancel(f"Are you sure to clean prefetch?")
+        if (user_input == "OK"):
+            # cleaning prefetch
+            exception = delete_dir_contents(prefetch_path)
+            if (exception is not None):
+                winsound.PlaySound("*", winsound.SND_ASYNC)
+                sg.popup_error(f"Something went wrong!\nException: {exception}", title="Oops!")
+            
             window.close()
             window = create_window()
 
@@ -269,22 +299,26 @@ while True:
             exception = delete_dir_contents(temp_path)
             if (exception is not None):
                 winsound.PlaySound("*", winsound.SND_ASYNC)
-                sg.popup_error(f"Something went wrong!\nException: {exception}")
+                sg.popup_error(f"Something went wrong!\nException: {exception}", title="Oops!")
             # %temp%
             exception = delete_dir_contents(temp_percent_path)
             if (exception is not None):
                 winsound.PlaySound("*", winsound.SND_ASYNC)
-                sg.popup_error(f"Something went wrong!\nException: {exception}")
+                sg.popup_error(f"Something went wrong!\nException: {exception}", title="Oops!")
+            exception = delete_dir_contents(prefetch_path)
+            if (exception is not None):
+                winsound.PlaySound("*", winsound.SND_ASYNC)
+                sg.popup_error(f"Something went wrong!\nException: {exception}", title="Oops!")
             # recycle bin
             if (user_settings["settings"]["clean_all_recycle_bin"]):
                 try:
                     winshell.recycle_bin().empty(confirm=False, show_progress=False, sound=False)
                 except Exception as e:
                     winsound.PlaySound("*", winsound.SND_ASYNC)
-                    sg.popup_error(f"An Error Occured! It may be your recycle bin is already empty!\nException: {e}")
+                    sg.popup_error(f"An Error Occured! It may be your recycle bin is already empty!\nException: {e}", title="Oops!")
 
             window.close()
-            window = create_window()
+            window = create_window(cleaning=True)
 
     elif (event == "Refresh (F2)" or event == "F2:113"):
         window.close()
